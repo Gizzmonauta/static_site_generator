@@ -6,6 +6,7 @@ dist/
 wheels/
 *.egg-info
 __pycache__/
+personal_tests.py
 
 # Virtual environments
 .venv

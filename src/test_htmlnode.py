@@ -1,6 +1,6 @@
 import unittest
 
-from htmlnode import HTMLNode, LeafNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 
 class TestHtmlNode(unittest.TestCase):
 
@@ -93,26 +93,100 @@ class TestHtmlNode(unittest.TestCase):
         self.assertIn('data-info="a&b<c>d"', result)
         self.assertIn('empty=""', result)
 
+    # Tests that a LeafNode renders a standard paragraph tag correctly
     def test_leaf_to_html_p(self):
         node = LeafNode("p", "Hello, world!")
         self.assertEqual(node.to_html(), "<p>Hello, world!</p>")
 
+    # Tests that a LeafNode renders an anchor tag with attributes correctly
     def test_leaf_to_html_a(self):
         node = LeafNode("a", "Click me!", {"href": "https://www.google.com"})
         self.assertEqual(node.to_html(), '<a href="https://www.google.com">Click me!</a>')
 
+    # Tests that a LeafNode with no tag renders raw text
     def test_leaf_to_html_no_tag(self):
         node = LeafNode(None, "Hello, world!")
         self.assertEqual(node.to_html(), "Hello, world!")
 
+    # Tests that a LeafNode without a value raises a ValueError
     def test_leaf_to_html_no_value(self):
         node = LeafNode("p", None)
         with self.assertRaises(ValueError):
             node.to_html()
 
+    # Tests that LeafNode constructor raises TypeError if children are passed
     def test_leaf_constructor_with_children(self):
         with self.assertRaises(TypeError):
             LeafNode(tag="p", value="text", children=[])
+
+    # Tests that a ParentNode with leaf children renders correctly
+    def test_parent_to_html_simple(self):
+        node = ParentNode(
+            "p",
+            [
+                LeafNode("b", "Bold text"),
+                LeafNode(None, "Normal text"),
+                LeafNode("i", "italic text"),
+            ],
+        )
+        self.assertEqual(
+            node.to_html(),
+            "<p><b>Bold text</b>Normal text<i>italic text</i></p>",
+        )
+
+    # Tests that a ParentNode with nested ParentNode children renders correctly
+    def test_parent_to_html_nested(self):
+        node = ParentNode(
+            "div",
+            [
+                ParentNode("p", [LeafNode("b", "Bold text")]),
+                LeafNode(None, "Normal text"),
+            ],
+        )
+        self.assertEqual(
+            node.to_html(),
+            "<div><p><b>Bold text</b></p>Normal text</div>",
+        )
+
+    # Tests that a ParentNode without a tag raises a ValueError
+    def test_parent_to_html_no_tag(self):
+        node = ParentNode(None, [LeafNode("b", "Bold text")])
+        with self.assertRaises(ValueError):
+            node.to_html()
+
+    # Tests that a ParentNode without children raises a ValueError
+    def test_parent_to_html_no_children(self):
+        node = ParentNode("p", None)
+        with self.assertRaises(ValueError):
+            node.to_html()
+
+    # Tests that a ParentNode with a single leaf child renders correctly
+    def test_to_html_with_children(self):
+        child_node = LeafNode("span", "child")
+        parent_node = ParentNode("div", [child_node])
+        self.assertEqual(parent_node.to_html(), "<div><span>child</span></div>")
+
+    # Tests that a ParentNode with grandchildren (deep nesting) renders correctly
+    def test_to_html_with_grandchildren(self):
+        grandchild_node = LeafNode("b", "grandchild")
+        child_node = ParentNode("span", [grandchild_node])
+        parent_node = ParentNode("div", [child_node])
+        self.assertEqual(
+            parent_node.to_html(),
+            "<div><span><b>grandchild</b></span></div>",
+        )
+
+    # Tests a complex structure with multiple nested parents and leaf nodes
+    def test_parent_to_html_complex(self):
+        grandchild = LeafNode("b", "grandchild")
+        child1 = ParentNode("span", [grandchild, grandchild])
+        child2 = ParentNode("span", [grandchild, grandchild])
+        leaf = LeafNode("i", "leaf")
+        parent = ParentNode("div", [child1, child2, leaf, leaf, leaf])
+        self.assertEqual(
+            parent.to_html(),
+            "<div><span><b>grandchild</b><b>grandchild</b></span><span><b>grandchild</b><b>grandchild</b></span><i>leaf</i><i>leaf</i><i>leaf</i></div>",
+        )
 
 if __name__ == "__main__":
     unittest.main()
