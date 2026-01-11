@@ -1,6 +1,7 @@
 import unittest
 
-from htmlnode import HTMLNode, LeafNode, ParentNode
+from htmlnode import HTMLNode, LeafNode, ParentNode, text_node_to_html_node
+from textnode import TextNode, TextType
 
 class TestHtmlNode(unittest.TestCase):
 
@@ -187,6 +188,71 @@ class TestHtmlNode(unittest.TestCase):
             parent.to_html(),
             "<div><span><b>grandchild</b><b>grandchild</b></span><span><b>grandchild</b><b>grandchild</b></span><i>leaf</i><i>leaf</i><i>leaf</i></div>",
         )
+
+    # Tests conversion from TextNode of type TEXT to HTMLNode
+    def test_text(self):
+        node = TextNode("This is a text node", TextType.TEXT)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, None)
+        self.assertEqual(html_node.value, "This is a text node")
+
+    # Tests conversion from TextNode of type IMAGE to HTMLNode
+    def test_image(self):
+        node = TextNode("This is an image", TextType.IMAGE, "https://www.example.com/image.png")
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, "img")
+        self.assertEqual(html_node.value, "")
+        self.assertEqual(
+            html_node.props,
+            {"src": "https://www.example.com/image.png", "alt": "This is an image"},
+        )
+
+    # Tests conversion from TextNode of type BOLD to HTMLNode
+    def test_bold(self):
+        node = TextNode("Bold text", TextType.BOLD)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, "b")
+        self.assertEqual(html_node.value, "Bold text")
+
+    # Tests conversion from TextNode of type ITALIC to HTMLNode
+    def test_italic(self):
+        node = TextNode("Italic text", TextType.ITALIC)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, "i")
+        self.assertEqual(html_node.value, "Italic text")
+
+    # Tests conversion from TextNode of type CODE to HTMLNode
+    def test_code(self):
+        node = TextNode("Code text", TextType.CODE)
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, "code")
+        self.assertEqual(html_node.value, "Code text")
+
+    # Tests conversion from TextNode of type LINK to HTMLNode
+    def test_link(self):
+        node = TextNode("Click me", TextType.LINK, "https://www.google.com")
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.tag, "a")
+        self.assertEqual(html_node.value, "Click me")
+        self.assertEqual(html_node.props, {"href": "https://www.google.com"})
+
+    # Tests that an IMAGE TextNode without a URL raises a ValueError
+    def test_image_no_url(self):
+        node = TextNode("Alt text", TextType.IMAGE)
+        with self.assertRaises(ValueError):
+            text_node_to_html_node(node)
+
+    # Tests that a LINK TextNode without a URL raises a ValueError
+    def test_link_no_url(self):
+        node = TextNode("Anchor", TextType.LINK)
+        with self.assertRaises(ValueError):
+            text_node_to_html_node(node)
+
+    # Tests that an unsupported TextType raises a ValueError
+    def test_text_node_to_html_node_unsupported_type(self):
+        node = TextNode("text", "unsupported")
+        with self.assertRaises(ValueError):
+            text_node_to_html_node(node)
 
 if __name__ == "__main__":
     unittest.main()
