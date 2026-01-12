@@ -1,4 +1,5 @@
 from textnode import TextNode, TextType
+import re
 
 def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: TextType) -> list[TextNode]:
     validate_split_nodes_delimiter_args(old_nodes, delimiter, text_type)
@@ -38,27 +39,23 @@ def validate_split_nodes_delimiter_args(old_nodes: list[TextNode], delimiter: st
         if len(parts) % 2 == 0:
             raise ValueError("Invalid Markdown syntax: unmatched delimiter")
         
+def extract_markdown_images(text: str) -> list[tuple[str, str]]:
+    return re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+
+        
 def main():
-    nodes = [TextNode("This is **bold** text", TextType.TEXT)]
-    delimiter = "**"
-    text_type = TextType.BOLD
-    new_nodes = split_nodes_delimiter(nodes, delimiter, text_type)
-    print(new_nodes,"\n\n")
+    text = "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)"
+    print(extract_markdown_images(text))
 
-    node = TextNode("This is text with a `code block` word", TextType.TEXT)
-    new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
-    print(new_nodes,"\n\n")
+    text = '![John](https://www.john.com)![Mary](https://www.mary.com)![Jerry](https://www.jerry.com)'
+    print(extract_markdown_images(text))
 
-    node = [
-            TextNode("This has `code`", TextType.TEXT),
-            TextNode("already bold", TextType.BOLD),
-            TextNode("This also has `code` in it", TextType.TEXT)
-        ]
-    new_nodes = split_nodes_delimiter(node, "`", TextType.CODE)
-    print(new_nodes,"\n\n")
+    text = '![John](https://www.john.com)![Mary](https://www.mary.com)![Jerry](https://www.jer(r)y.com)'
+    print(extract_markdown_images(text))
 
-    node = TextNode("code `code` code", TextType.TEXT)
-    new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
-    print(new_nodes,"\n\n")
+    text = '![John](https://www.john.com)![Mary](https://www.mary.com)![Jerry](https://www.jer(r)y.com)![Jessica](https://jessica.com)'
+    print(extract_markdown_images(text))
+
+
 if __name__ == "__main__":
     main()

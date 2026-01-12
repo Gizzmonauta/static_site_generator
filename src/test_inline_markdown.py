@@ -1,7 +1,8 @@
 import unittest
+import re
 
 from textnode import TextNode, TextType
-from inline_markdown import split_nodes_delimiter
+from inline_markdown import split_nodes_delimiter, extract_markdown_images
 
 class TestCreateTextNodes(unittest.TestCase):
     def test_split_nodes_delimiter_empty_old_nodes(self):
@@ -114,6 +115,29 @@ class TestCreateTextNodes(unittest.TestCase):
                 "**",
                 TextType.BOLD
             )
+
+    def test_text_with_images(self):
+        text = "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)"
+        expected = [('rick roll', 'https://i.imgur.com/aKaOqIh.gif'), ('obi wan', 'https://i.imgur.com/fJRm4Vk.jpeg')]
+        self.assertEqual(extract_markdown_images(text), expected)
+
+    def test_consecutive_images(self):
+        text = '![John](https://www.john.com)![Mary](https://www.mary.com)![Jerry](https://www.jerry.com)'
+        expected = [('John', 'https://www.john.com'), ('Mary', 'https://www.mary.com'), ('Jerry', 'https://www.jerry.com')]
+        self.assertEqual(extract_markdown_images(text), expected)
+
+    def test_broken_link_exclusion(self):
+        # The parenthesis in jer(r)y.com breaks the strict regex match, so Jerry is excluded
+        text = '![John](https://www.john.com)![Mary](https://www.mary.com)![Jerry](https://www.jer(r)y.com)'
+        expected = [('John', 'https://www.john.com'), ('Mary', 'https://www.mary.com')]
+        self.assertEqual(extract_markdown_images(text), expected)
+
+    def test_recovery_after_broken_link(self):
+        # Jerry is skipped, but the regex engine recovers to find Jessica
+        text = '![John](https://www.john.com)![Mary](https://www.mary.com)![Jerry](https://www.jer(r)y.com)![Jessica](https://jessica.com)'
+        expected = [('John', 'https://www.john.com'), ('Mary', 'https://www.mary.com'), ('Jessica', 'https://jessica.com')]
+        self.assertEqual(extract_markdown_images(text), expected)
+    
 
 if __name__ == "__main__":
     unittest.main()
