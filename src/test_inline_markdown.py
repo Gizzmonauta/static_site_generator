@@ -2,7 +2,7 @@ import unittest
 import re
 
 from textnode import TextNode, TextType
-from inline_markdown import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_link, split_nodes_image
+from inline_markdown import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_link, split_nodes_image, text_to_textnodes
 
 class TestCreateTextNodes(unittest.TestCase):
     def test_split_nodes_delimiter_empty_old_nodes(self):
@@ -441,5 +441,195 @@ class TestCreateTextNodes(unittest.TestCase):
             final_nodes,
         )
 
+    def test_text_to_textnodes_basic_bold_asterisks(self):
+        text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        expected = [
+            TextNode('This is ', TextType.TEXT),
+            TextNode('text', TextType.BOLD),
+            TextNode(' with an ', TextType.TEXT),
+            TextNode('italic', TextType.ITALIC),
+            TextNode(' word and a ', TextType.TEXT),
+            TextNode('code block', TextType.CODE),
+            TextNode(' and an ', TextType.TEXT),
+            TextNode('obi wan image', TextType.IMAGE, 'https://i.imgur.com/fJRm4Vk.jpeg'),
+            TextNode(' and a ', TextType.TEXT),
+            TextNode('link', TextType.LINK, 'https://boot.dev')
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_text_to_textnodes_basic_bold_underscores(self):
+        text = "This is __text__ with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        expected = [
+            TextNode('This is ', TextType.TEXT),
+            TextNode('text', TextType.BOLD),
+            TextNode(' with an ', TextType.TEXT),
+            TextNode('italic', TextType.ITALIC),
+            TextNode(' word and a ', TextType.TEXT),
+            TextNode('code block', TextType.CODE),
+            TextNode(' and an ', TextType.TEXT),
+            TextNode('obi wan image', TextType.IMAGE, 'https://i.imgur.com/fJRm4Vk.jpeg'),
+            TextNode(' and a ', TextType.TEXT),
+            TextNode('link', TextType.LINK, 'https://boot.dev')
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_text_to_textnodes_basic_italic_asterisks(self):
+        text = "This is **text** with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        expected = [
+            TextNode('This is ', TextType.TEXT),
+            TextNode('text', TextType.BOLD),
+            TextNode(' with an ', TextType.TEXT),
+            TextNode('italic', TextType.ITALIC),
+            TextNode(' word and a ', TextType.TEXT),
+            TextNode('code block', TextType.CODE),
+            TextNode(' and an ', TextType.TEXT),
+            TextNode('obi wan image', TextType.IMAGE, 'https://i.imgur.com/fJRm4Vk.jpeg'),
+            TextNode(' and a ', TextType.TEXT),
+            TextNode('link', TextType.LINK, 'https://boot.dev')
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_text_to_textnodes_basic_italic_underscores(self):
+        text = "This is __text__ with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        expected = [
+            TextNode('This is ', TextType.TEXT),
+            TextNode('text', TextType.BOLD),
+            TextNode(' with an ', TextType.TEXT),
+            TextNode('italic', TextType.ITALIC),
+            TextNode(' word and a ', TextType.TEXT),
+            TextNode('code block', TextType.CODE),
+            TextNode(' and an ', TextType.TEXT),
+            TextNode('obi wan image', TextType.IMAGE, 'https://i.imgur.com/fJRm4Vk.jpeg'),
+            TextNode(' and a ', TextType.TEXT),
+            TextNode('link', TextType.LINK, 'https://boot.dev')
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_text_to_textnodes_bold_italic_asterisks(self):
+        text = "This is ***bold + italic*** text with a __bold__ with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        expected = [
+            TextNode('This is ', TextType.TEXT),
+            TextNode('bold + italic', TextType.BOLD_ITALIC),
+            TextNode(' text with a ', TextType.TEXT),
+            TextNode('bold', TextType.BOLD),
+            TextNode(' with an ', TextType.TEXT),
+            TextNode('italic', TextType.ITALIC),
+            TextNode(' word and a ', TextType.TEXT),
+            TextNode('code block', TextType.CODE),
+            TextNode(' and an ', TextType.TEXT),
+            TextNode('obi wan image', TextType.IMAGE, 'https://i.imgur.com/fJRm4Vk.jpeg'),
+            TextNode(' and a ', TextType.TEXT),
+            TextNode('link', TextType.LINK, 'https://boot.dev')
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_text_to_textnodes_bold_italic_underscores(self):
+        text = "This is ___bold + italic___ text with a __bold__ word, an _italic_ word and a `code block`. Also,an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        expected = [
+            TextNode('This is ', TextType.TEXT),
+            TextNode('bold + italic', TextType.BOLD_ITALIC),
+            TextNode(' text with a ', TextType.TEXT),
+            TextNode('bold', TextType.BOLD),
+            TextNode(' word, an ', TextType.TEXT),
+            TextNode('italic', TextType.ITALIC),
+            TextNode(' word and a ', TextType.TEXT),
+            TextNode('code block', TextType.CODE),
+            TextNode('. Also,an ', TextType.TEXT),
+            TextNode('obi wan image', TextType.IMAGE, 'https://i.imgur.com/fJRm4Vk.jpeg'),
+            TextNode(' and a ', TextType.TEXT),
+            TextNode('link', TextType.LINK, 'https://boot.dev')
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_text_to_textnodes_empty_string(self):
+        text = ""
+        expected = [TextNode("", TextType.TEXT)]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_text_to_textnodes_plain_text(self):
+        text = "This is plain text with no markdown."
+        expected = [TextNode("This is plain text with no markdown.", TextType.TEXT)]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_text_to_textnodes_unmatched_delimiter(self):
+        text = "This is **bold text"
+        with self.assertRaises(ValueError):
+            text_to_textnodes(text)
+
+    def test_text_to_textnodes_delimiter_at_start(self):
+        text = "**bold** at start"
+        expected = [
+            TextNode("bold", TextType.BOLD),
+            TextNode(" at start", TextType.TEXT)
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_text_to_textnodes_delimiter_at_end(self):
+        text = "Text at end **bold**"
+        expected = [
+            TextNode("Text at end ", TextType.TEXT),
+            TextNode("bold", TextType.BOLD)
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_text_to_textnodes_empty_formatted_section(self):
+        text = "Empty **bold** section"
+        expected = [
+            TextNode("Empty ", TextType.TEXT),
+            TextNode("bold", TextType.BOLD),
+            TextNode(" section", TextType.TEXT)
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_text_to_textnodes_code_with_backticks_inside(self):
+        text = "Code `with 'quote'` inside"
+        expected = [
+            TextNode("Code ", TextType.TEXT),
+            TextNode("with 'quote'", TextType.CODE),
+            TextNode(" inside", TextType.TEXT)
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_text_to_textnodes_image_with_special_chars(self):
+        text = "Image ![alt text with spaces & symbols!@#](https://example.com/image.jpg)"
+        expected = [
+            TextNode("Image ", TextType.TEXT),
+            TextNode("alt text with spaces & symbols!@#", TextType.IMAGE, "https://example.com/image.jpg")
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_text_to_textnodes_link_with_special_chars(self):
+        text = "Link [text with spaces & symbols!@#](https://example.com/page?query=value)"
+        expected = [
+            TextNode("Link ", TextType.TEXT),
+            TextNode("text with spaces & symbols!@#", TextType.LINK, "https://example.com/page?query=value")
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_text_to_textnodes_bold_italic_at_start(self):
+        text = "***bold italic*** start"
+        expected = [
+            TextNode("bold italic", TextType.BOLD_ITALIC),
+            TextNode(" start", TextType.TEXT)
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_text_to_textnodes_multiple_bold_italic(self):
+        text = "***first*** and ***second***"
+        expected = [
+            TextNode("first", TextType.BOLD_ITALIC),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("second", TextType.BOLD_ITALIC)
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
+    def test_text_to_textnodes_mixed_delimiters(self):
+        text = "**bold _italic_**"
+        expected = [
+            TextNode("bold _italic_", TextType.BOLD)
+        ]
+        self.assertEqual(text_to_textnodes(text), expected)
+
 if __name__ == "__main__":
     unittest.main()
+

@@ -110,46 +110,25 @@ def validate_split_nodes_images_and_links_args(old_nodes: list[TextNode]) -> Non
         if not isinstance(node, TextNode):
             raise ValueError("All elements in old_nodes must be TextNode instances")
 
-        
-def main():
-    node = TextNode(
-        "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
-        TextType.TEXT,
-    )
-    new_nodes = split_nodes_image([node])
-    print(new_nodes, "\n\n")
-    #     [
-    #         TextNode("This is text with an ", TextType.TEXT),
-    #         TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
-    #         TextNode(" and another ", TextType.TEXT),
-    #         TextNode(
-    #             "second image", TextType.IMAGE, "https://i.imgur.com/3elNhQu.png"
-    #         ),
-    #     ],
- 
-    node = TextNode(
-        "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)",
-        TextType.TEXT,
-    )
-    new_nodes = split_nodes_link([node])
-    print(new_nodes, "\n\n")
-    #     [
-    #         TextNode("This is text with a link ", TextType.TEXT),
-    #         TextNode("to boot dev", TextType.LINK, "https://www.boot.dev"),
-    #         TextNode(" and ", TextType.TEXT),
-    #         TextNode("to youtube", TextType.LINK, "https://www.youtube.com/@bootdotdev"),
-    #     ],
+def text_to_textnodes(text: str) -> list[TextNode]:
+    if not isinstance(text, str):
+        raise ValueError("text must be a string")
+    if not text:
+        return [TextNode("", TextType.TEXT)]
+    bold_italic1_nodes: list[TextNode] = split_nodes_delimiter([TextNode(text, TextType.TEXT)], "***", TextType.BOLD_ITALIC)
+    bold_italic2_nodes: list[TextNode] = split_nodes_delimiter(bold_italic1_nodes, "___", TextType.BOLD_ITALIC)
+    bold1_nodes: list[TextNode] = split_nodes_delimiter(bold_italic2_nodes, "**", TextType.BOLD)
+    bold2_nodes: list[TextNode] = split_nodes_delimiter(bold1_nodes, "__", TextType.BOLD)
+    italic1_nodes: list[TextNode] = split_nodes_delimiter(bold2_nodes, "*", TextType.ITALIC)
+    italic2_nodes: list[TextNode] = split_nodes_delimiter(italic1_nodes, "_", TextType.ITALIC)
+    code_nodes: list[TextNode] = split_nodes_delimiter(italic2_nodes, "`", TextType.CODE)
+    image_nodes: list[TextNode] = split_nodes_image(code_nodes)
+    link_nodes: list[TextNode] = split_nodes_link(image_nodes)
+    return link_nodes
 
-    nodes = [
-        TextNode("This has `code`", TextType.TEXT),
-        TextNode("already bold", TextType.BOLD),
-        TextNode("This also has `code` in it", TextType.TEXT),
-        TextNode("This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)", TextType.TEXT),
-        TextNode("This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)", TextType.TEXT),
-        TextNode('[John](https://www.john.com)![Mary](https://www.mary.com)![Jerry](https://www.jerry.com)', TextType.TEXT)
-    ]
-    new_nodes = split_nodes_image(nodes)
-    print(new_nodes, "\n\n")
+def main():
+    text = "This is **text** with an _italic_ word, different from ***bold + italic***, and a `code block`. Then an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+    print(text_to_textnodes(text))
 
 if __name__ == "__main__":
     main()
