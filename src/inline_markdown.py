@@ -27,14 +27,14 @@ def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: 
 
 def validate_split_nodes_delimiter_args(old_nodes: list[TextNode], delimiter: str, text_type: TextType) -> None:
     if not isinstance(old_nodes, list):
-        raise ValueError("old_nodes must be a list")
+        raise TypeError("old_nodes must be a list")
     if not isinstance(delimiter, str) or delimiter == "":
-        raise ValueError("Delimiter must be a non-empty string")
+        raise TypeError("Delimiter must be a non-empty string")
     if not isinstance(text_type, TextType):
-        raise ValueError("text_type must be a valid TextType")
+        raise TypeError("text_type must be a valid TextType")
     for node in old_nodes:
         if not isinstance(node, TextNode):
-            raise ValueError("All elements in old_nodes must be TextNode instances")
+            raise TypeError("All elements in old_nodes must be TextNode instances")
         parts = node.text.split(delimiter)
         if len(parts) % 2 == 0:
             raise ValueError("Invalid Markdown syntax: unmatched delimiter")
@@ -105,14 +105,14 @@ def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
 
 def validate_split_nodes_images_and_links_args(old_nodes: list[TextNode]) -> None:
     if not isinstance(old_nodes, list):
-        raise ValueError("old_nodes must be a list")
+        raise TypeError("old_nodes must be a list")
     for node in old_nodes:
         if not isinstance(node, TextNode):
-            raise ValueError("All elements in old_nodes must be TextNode instances")
+            raise TypeError("All elements in old_nodes must be TextNode instances")
 
 def text_to_textnodes(text: str) -> list[TextNode]:
     if not isinstance(text, str):
-        raise ValueError("text must be a string")
+        raise TypeError("text must be a string")
     if not text:
         return [TextNode("", TextType.TEXT)]
     bold_italic1_nodes: list[TextNode] = split_nodes_delimiter([TextNode(text, TextType.TEXT)], "***", TextType.BOLD_ITALIC)

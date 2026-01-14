@@ -10,19 +10,19 @@ class TestCreateTextNodes(unittest.TestCase):
         self.assertEqual(result, [])
 
     def test_split_nodes_delimiter_old_nodes_contains_none(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             split_nodes_delimiter([None], "**", TextType.BOLD)
 
     def test_split_nodes_delimiter_old_nodes_contains_non_textnode(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             split_nodes_delimiter(["not a TextNode"], "**", TextType.BOLD)
 
     def test_split_nodes_delimiter_delimiter_is_none(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             split_nodes_delimiter([TextNode("text", TextType.TEXT)], None, TextType.BOLD)
 
     def test_split_nodes_delimiter_text_type_is_none(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             split_nodes_delimiter([TextNode("text", TextType.TEXT)], "**", None)
 
     def test_split_nodes_delimiter_basic(self):
@@ -97,15 +97,15 @@ class TestCreateTextNodes(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_validate_split_nodes_delimiter_args_invalid_old_nodes(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             split_nodes_delimiter("not a list", "**", TextType.BOLD)
 
     def test_validate_split_nodes_delimiter_args_invalid_delimiter(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             split_nodes_delimiter([TextNode("text", TextType.TEXT)], "", TextType.BOLD)
 
     def test_validate_split_nodes_delimiter_args_invalid_text_type(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             split_nodes_delimiter([TextNode("text", TextType.TEXT)], "**", "not a text type")
 
     def test_validate_split_nodes_delimiter_args_unmatched_delimiter(self):
@@ -400,22 +400,22 @@ class TestCreateTextNodes(unittest.TestCase):
         self.assertListEqual([node], new_nodes)
 
     def test_split_nodes_image_raises_on_non_list(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             split_nodes_image(None)  # type: ignore[arg-type]
 
 
     def test_split_nodes_link_raises_on_non_list(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             split_nodes_link("not a list")  # type: ignore[arg-type]
 
 
     def test_split_nodes_image_raises_on_non_textnode_elements(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             split_nodes_image(["not a TextNode"])  # type: ignore[list-item]
 
 
     def test_split_nodes_link_raises_on_non_textnode_elements(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             split_nodes_link([123])  # type: ignore[list-item]
 
     def test_split_nodes_image_then_link_pipeline(self):
