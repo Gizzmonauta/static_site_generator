@@ -1,3 +1,4 @@
+import os
 from markdown_blocks import markdown_to_blocks, block_to_block_type
 from blocknode import BlockType
 from textnode import TextNode
@@ -126,30 +127,38 @@ def text_to_children(text: str) -> list[HTMLNode]:
         html_children.append(text_node_to_html_node(text_node))
     return html_children
 
+def extract_title(markdown: str) -> str:
+    lines = markdown.split("\n")
+    for line in lines:
+        new_line = line.strip()
+        if new_line.startswith("# "):
+            return new_line[2:].strip()
+    raise ValueError("No level 1 heading found in the markdown.")
+
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+    with open(from_path, 'r') as file_object:
+        md_content = file_object.read()
+    with open(template_path, 'r') as template_file:
+        template_content = template_file.read()
+    md_htmlnode = markdown_to_html_node(md_content)
+    md_html = md_htmlnode.to_html()
+    title = extract_title(md_content)
+    final_html = template_content.replace("{{ Title }}", title)
+    final_html = final_html.replace("{{ Content }}", md_html)
+    dest_abs: str = os.path.dirname(dest_path)
+    os.makedirs(dest_abs, exist_ok=True)
+    with open(dest_path, 'w') as file_object:
+        file_object.write(final_html)
+
+
+
+
 def main():
-    md = """
-This is **bolded** paragraph
-text in a p
-tag here
-
-This is another paragraph with _italic_ text and `code` here
-
-"""
-    node = markdown_to_html_node(md)
-    html = node.to_html()
-    print(html)
-
-    md = """
-```
-This is text that _should_ remain
-the **same** even with inline stuff
-```
-"""
-
-    node = markdown_to_html_node(md)
-    html = node.to_html()
-    print(html)
-
+    print(f"{extract_title("# Hello")}\n\n")
+    print(f"{extract_title("## Not a title\n# Real Title\nSome text")}\n\n")
+    print(f"{extract_title("There is no h1")}\n\n")
+    
 
 if __name__ == "__main__":
     main()

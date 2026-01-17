@@ -1,5 +1,5 @@
 import unittest
-from markdown_to_html import markdown_to_html_node
+from markdown_to_html import extract_title, markdown_to_html_node
 from htmlnode import HTMLNode
 
 class TestMarkdownToHTML(unittest.TestCase):
@@ -185,3 +185,20 @@ class TestMarkdownToHTML(unittest.TestCase):
             node.to_html(),
             "<div><ol><li>One</li><li>Two</li></ol></div>",
         )
+
+    def test_extract_title_basic_happy_path(self):
+        self.assertEqual(extract_title("# Hello"), "Hello")
+    
+    
+    def test_extract_title_multiple_headings(self):
+        self.assertEqual(extract_title("## Not a title\n# Real Title\nSome text"), "Real Title")
+    
+    def test_extract_title_no_h1(self):
+        with self.assertRaises(ValueError):
+            extract_title("There is no h1")
+    
+    def test_extract_title_with_whitespace_before_hash(self):
+        self.assertEqual(extract_title("   # Hello"), "Hello")
+    
+    def test_extract_title_multiple_h1_stops_at_first(self):
+        self.assertEqual(extract_title("# First Title\n# Second Title\nSome text"), "First Title")
