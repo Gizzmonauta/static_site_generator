@@ -1,7 +1,9 @@
-from textnode import TextNode, TextType
+from copystatic import copy_files_recursive 
 
 def main():
-    print(TextNode("This is my anchor text", TextType.LINK, "https://example.com"))
+    source = "./static"
+    destination = "./public"
+    copy_files_recursive(source, destination)
 
 if __name__ == "__main__":
     main()
