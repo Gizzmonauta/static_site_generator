@@ -135,24 +135,32 @@ def extract_title(markdown: str) -> str:
             return new_line[2:].strip()
     raise ValueError("No level 1 heading found in the markdown.")
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path: str, template_path: str, dest_path: str) -> None:
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     with open(from_path, 'r') as file_object:
-        md_content = file_object.read()
+        md_content: str = file_object.read()
     with open(template_path, 'r') as template_file:
-        template_content = template_file.read()
-    md_htmlnode = markdown_to_html_node(md_content)
-    md_html = md_htmlnode.to_html()
-    title = extract_title(md_content)
-    final_html = template_content.replace("{{ Title }}", title)
+        template_content: str = template_file.read()
+    md_htmlnode: HTMLNode = markdown_to_html_node(md_content)
+    md_html: str = md_htmlnode.to_html()
+    title: str = extract_title(md_content)
+    final_html: str = template_content.replace("{{ Title }}", title)
     final_html = final_html.replace("{{ Content }}", md_html)
     dest_abs: str = os.path.dirname(dest_path)
     os.makedirs(dest_abs, exist_ok=True)
     with open(dest_path, 'w') as file_object:
         file_object.write(final_html)
 
-
-
+def generate_pages_recursive(dir_path_content: str, template_path: str, dest_dir_path: str) -> None:
+    for entry in os.listdir(dir_path_content):
+        from_path = os.path.join(dir_path_content, entry)
+        dest_path = os.path.join(dest_dir_path, entry)
+        if os.path.isfile(from_path):
+            if entry.endswith(".md"):
+                dest_path = dest_path[:-3] + ".html"  # change .md to .html
+                generate_page(from_path, template_path, dest_path)
+        elif os.path.isdir(from_path):
+            generate_pages_recursive(from_path, template_path, dest_path) 
 
 def main():
     print(f"{extract_title("# Hello")}\n\n")
