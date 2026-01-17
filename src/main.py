@@ -1,15 +1,23 @@
+import os
+import sys
+import shutil
 from copystatic import copy_files_recursive 
 from markdown_to_html import generate_pages_recursive
 
 def main():
-    source = "./static"
-    destination = "./public"
-    copy_files_recursive(source, destination)
-
-    from_path = "./content"
+    static_dir = "./static"
+    public_dir = "./docs"
+    content_dir = "./content"
     template_path = "./template.html"
-    dest_path = "./public"
-    generate_pages_recursive(from_path, template_path, dest_path)
+
+    print(f"Copying files from {static_dir} to {public_dir}...")
+    copy_files_recursive(static_dir, public_dir)
+
+    basepath = "/"
+    if len(sys.argv) > 1:
+        basepath = sys.argv[1]
+
+    generate_pages_recursive(os.path.join(content_dir, ""), template_path, os.path.join(public_dir, ""), basepath)
 
 if __name__ == "__main__":
     main()

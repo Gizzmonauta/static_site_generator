@@ -135,7 +135,7 @@ def extract_title(markdown: str) -> str:
             return new_line[2:].strip()
     raise ValueError("No level 1 heading found in the markdown.")
 
-def generate_page(from_path: str, template_path: str, dest_path: str) -> None:
+def generate_page(from_path: str, template_path: str, dest_path: str, basepath: str) -> None:
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     with open(from_path, 'r') as file_object:
         md_content: str = file_object.read()
@@ -146,21 +146,23 @@ def generate_page(from_path: str, template_path: str, dest_path: str) -> None:
     title: str = extract_title(md_content)
     final_html: str = template_content.replace("{{ Title }}", title)
     final_html = final_html.replace("{{ Content }}", md_html)
+    final_html = final_html.replace('href="/', f'href="{basepath}')
+    final_html = final_html.replace('src="/', f'src="{basepath}')
     dest_abs: str = os.path.dirname(dest_path)
     os.makedirs(dest_abs, exist_ok=True)
     with open(dest_path, 'w') as file_object:
         file_object.write(final_html)
 
-def generate_pages_recursive(dir_path_content: str, template_path: str, dest_dir_path: str) -> None:
+def generate_pages_recursive(dir_path_content: str, template_path: str, dest_dir_path: str, basepath: str) -> None:
     for entry in os.listdir(dir_path_content):
         from_path = os.path.join(dir_path_content, entry)
         dest_path = os.path.join(dest_dir_path, entry)
         if os.path.isfile(from_path):
             if entry.endswith(".md"):
                 dest_path = dest_path[:-3] + ".html"  # change .md to .html
-                generate_page(from_path, template_path, dest_path)
+                generate_page(from_path, template_path, dest_path, basepath)
         elif os.path.isdir(from_path):
-            generate_pages_recursive(from_path, template_path, dest_path) 
+            generate_pages_recursive(from_path, template_path, dest_path, basepath) 
 
 def main():
     print(f"{extract_title("# Hello")}\n\n")

@@ -5,10 +5,8 @@ build/
 dist/
 wheels/
 *.egg-info
-__pycache__/
 personal_tests.py
 codewars.py
-public/
 
 # Virtual environments
 .venv
