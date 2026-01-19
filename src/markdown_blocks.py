@@ -1,7 +1,7 @@
 import re
 from blocknode import BlockType
 
-def markdown_to_blocks(markdown: str) -> list:
+def markdown_to_blocks(markdown: str) -> list[BlockType]:
     """
     Convert a markdown string into a list of blocks.
     Currently, only inline markdown is supported, so the entire markdown string
@@ -10,7 +10,7 @@ def markdown_to_blocks(markdown: str) -> list:
     if not isinstance(markdown, str):
         raise TypeError("Input must be a string")
     
-    new_blocks: list = []
+    new_blocks: list[BlockType] = []
     lines = markdown.split("\n\n")
     for line in lines:
         line = line.strip()
